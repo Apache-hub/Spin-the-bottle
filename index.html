@@ -25,10 +25,12 @@
             justify-content: center;
         }
         #bottle {
-            width: 70px; /* Şüşənin enini bir az azaltdıq */
-            height: auto; /* Hündürlüyü avtomatik olsun */
+            /* Şüşənin hündürlüyünü bir az artırırıq */
+            height: 300px;
+            width: auto;
             margin-bottom: 50px;
-            transition: transform 3s ease-out;
+            /* Fırlanma animasiyasını axıcı edən CSS kodu */
+            transition: transform 3s ease-out; /* 3 saniyəlik yumşaq fırlanma effekti */
         }
         #spin-button {
             padding: 15px 30px;
@@ -45,40 +47,8 @@
 <body>
 
     <div id="game-area">
-        <img id="bottle" src="https://i.imgur.com/f9m2015.png" alt="Bottle">
-
-        <button id="spin-button">Fırlat!</button>
-    </div>
-
-    <script>
-        // HTML elementlərini JavaScript-də "tuturuq"
-        const bottle = document.getElementById('bottle');
-        const spinButton = document.getElementById('spin-button');
-
-        // "Fırlat!" düyməsinə bir klik "qulaqçısı" əlavə edirik
-        spinButton.addEventListener('click', () => {
-            // Təsadüfi bir fırlanma dərəcəsi təyin edirik
-            const randomRotation = Math.floor(Math.random() * 2000) + 1080;
-
-            // Şüşənin fırlanmasını təmin edən CSS stilini tətbiq edirik
-            bottle.style.transform = `rotate(${randomRotation}deg)`;
-        });
-    </script>
-</body>
-</html>
-            font-weight: bold;
-            color: white;
-            background-color: #3498db;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="game-area">
-        <img id="bottle" src="https://www.seekpng.com/png/full/22-225301_coca-cola-bottle-png-image-free-download-glass.png" alt="Bottle">
+        <img id="bottle" src="bottle.png" alt="Bottle">
+        
         <button id="spin-button">Fırlat!</button>
     </div>
 
@@ -91,47 +61,12 @@
         spinButton.addEventListener('click', () => {
             // Təsadüfi bir fırlanma dərəcəsi təyin edirik
             // Minimum 3 tam dövr (1080 dərəcə), maksimum 8 tam dövr (2880 dərəcə)
-            // Bu, fırlanmanın hər dəfə fərqli görünməsini təmin edir
             const randomRotation = Math.floor(Math.random() * 1800) + 1080;
 
             // Şüşənin fırlanmasını təmin edən CSS stilini tətbiq edirik
             bottle.style.transform = `rotate(${randomRotation}deg)`;
         });
     </script>
-</body>
-</html>
-            background-color: #3498db;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
 
-    <div id="game-area">
-        <img id="bottle" src="https://www.seekpng.com/png/full/22-225301_coca-cola-bottle-png-image-free-download-glass.png" alt="Bottle">
-
-        <button id="spin-button">Fırlat!</button>
-    </div>
-
-    <script>
-        // Gələcəkdə düyməyə basanda nə baş verəcəyini bura yazacağıq
-        // Hazırda bu hissə boşdur
-    </script>
-</body>
-</html>
-        // Mini App açılan kimi Telegram-dan istifadəçi məlumatlarını alırıq
-        if (tg.initDataUnsafe.user) {
-            // İstifadəçinin adını alırıq
-            let userName = tg.initDataUnsafe.user.first_name;
-
-            // Həmin adı HTML-dəki "user-info" id-li elementin içinə yazırıq
-            document.getElementById('user-info').innerText = 'Salam, ' + userName + '!';
-        } else {
-            // Əgər məlumatları əldə etmək mümkün olmasa, xəta mesajı göstəririk
-            document.getElementById('user-info').innerText = 'İstifadəçi məlumatını əldə etmək mümkün olmadı.';
-        }
-    </script>
 </body>
 </html>
