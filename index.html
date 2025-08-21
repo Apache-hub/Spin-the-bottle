@@ -4,22 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oyunum</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { 
             background-color: #2c3e50; 
             color: white; 
-            display: flex; 
+            display: flex;
+            flex-direction: column; 
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
             margin: 0;
             font-family: sans-serif; 
-            font-size: 24px;
+            font-size: 20px;
             text-align: center;
+        }
+        #user-info {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
-    <p>Mənim Mini App Oyunum Hazırdır!</p>
+    <p>Telegram Mini App-ə xoş gəlmisiniz!</p>
+    <p id="user-info">İstifadəçi məlumatı yüklənir...</p>
+
+    <script>
+        // Telegram Mini App obyektini əldə edirik
+        let tg = window.Telegram.WebApp;
+
+        // Mini App açılan kimi Telegram-dan istifadəçi məlumatlarını alırıq
+        if (tg.initDataUnsafe.user) {
+            // İstifadəçinin adını alırıq
+            let userName = tg.initDataUnsafe.user.first_name;
+
+            // Həmin adı HTML-dəki "user-info" id-li elementin içinə yazırıq
+            document.getElementById('user-info').innerText = 'Salam, ' + userName + '!';
+        } else {
+            // Əgər məlumatları əldə etmək mümkün olmasa, xəta mesajı göstəririk
+            document.getElementById('user-info').innerText = 'İstifadəçi məlumatını əldə etmək mümkün olmadı.';
+        }
+    </script>
 </body>
 </html>
