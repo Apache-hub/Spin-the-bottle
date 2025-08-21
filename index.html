@@ -16,24 +16,45 @@
             height: 100vh; 
             margin: 0;
             font-family: sans-serif; 
-            font-size: 20px;
-            text-align: center;
+            overflow: hidden; /* Səhifənin kənara çıxmasının qarşısını alır */
         }
-        #user-info {
+        #game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #bottle {
+            width: 80px; /* Şüşənin eni */
+            height: 250px; /* Şüşənin hündürlüyü */
+            margin-bottom: 50px; /* Düymə ilə arasında məsafə */
+        }
+        #spin-button {
+            padding: 15px 30px;
+            font-size: 20px;
             font-weight: bold;
-            color: #3498db;
-            font-size: 24px;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <p>Telegram Mini App-ə xoş gəlmisiniz!</p>
-    <p id="user-info">İstifadəçi məlumatı yüklənir...</p>
+
+    <div id="game-area">
+        <img id="bottle" src="https://www.seekpng.com/png/full/22-225301_coca-cola-bottle-png-image-free-download-glass.png" alt="Bottle">
+
+        <button id="spin-button">Fırlat!</button>
+    </div>
 
     <script>
-        // Telegram Mini App obyektini əldə edirik
-        let tg = window.Telegram.WebApp;
-
+        // Gələcəkdə düyməyə basanda nə baş verəcəyini bura yazacağıq
+        // Hazırda bu hissə boşdur
+    </script>
+</body>
+</html>
         // Mini App açılan kimi Telegram-dan istifadəçi məlumatlarını alırıq
         if (tg.initDataUnsafe.user) {
             // İstifadəçinin adını alırıq
