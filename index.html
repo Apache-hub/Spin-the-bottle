@@ -25,15 +25,47 @@
             justify-content: center;
         }
         #bottle {
-            width: 80px;
-            height: 250px;
+            width: 70px; /* Şüşənin enini bir az azaltdıq */
+            height: auto; /* Hündürlüyü avtomatik olsun */
             margin-bottom: 50px;
-            /* YENİ! Fırlanma animasiyasını axıcı edən CSS kodu */
-            transition: transform 3s ease-out; /* 3 saniyəlik yumşaq fırlanma effekti */
+            transition: transform 3s ease-out;
         }
         #spin-button {
             padding: 15px 30px;
             font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-area">
+        <img id="bottle" src="https://i.imgur.com/f9m2015.png" alt="Bottle">
+
+        <button id="spin-button">Fırlat!</button>
+    </div>
+
+    <script>
+        // HTML elementlərini JavaScript-də "tuturuq"
+        const bottle = document.getElementById('bottle');
+        const spinButton = document.getElementById('spin-button');
+
+        // "Fırlat!" düyməsinə bir klik "qulaqçısı" əlavə edirik
+        spinButton.addEventListener('click', () => {
+            // Təsadüfi bir fırlanma dərəcəsi təyin edirik
+            const randomRotation = Math.floor(Math.random() * 2000) + 1080;
+
+            // Şüşənin fırlanmasını təmin edən CSS stilini tətbiq edirik
+            bottle.style.transform = `rotate(${randomRotation}deg)`;
+        });
+    </script>
+</body>
+</html>
             font-weight: bold;
             color: white;
             background-color: #3498db;
