@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,42 +26,25 @@
             transition: opacity 0.5s ease-in-out;
         }
         
-        /* --- Yüklenme ve Başlık Ekranı Stilleri --- */
         #loading-screen, #title-screen {
             background-image: url('loading_background.png');
             background-size: cover;
             background-position: center;
         }
-        #progress-bar-container {
-            width: 80%;
-            height: 25px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            padding: 3px;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #b3ffab, #12fff7);
-            border-radius: 10px;
-            transition: width 2.5s ease;
-        }
         
-        /* --- Oyun Ekranı Stilleri --- */
         #game-screen {
-            background-image: url('https://i.imgur.com/L3eD83T.jpg'); /* Tahta fon */
+            background-image: url('https://i.imgur.com/L3eD83T.jpg'); /* Taxta fon */
             background-size: cover;
         }
         #bottle {
             height: 300px;
             width: auto;
             cursor: pointer;
-            transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1); /* Daha gerçekçi yavaşlama */
+            transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1);
             -webkit-touch-callout: none;
         }
         
-        /* --- YENİ: Gemini Modal Stilleri --- */
+        /* --- Modal Stilleri --- */
         .modal-overlay {
             position: absolute;
             top: 0;
@@ -84,208 +67,92 @@
             max-width: 400px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .modal-content h3 {
-            margin-top: 0;
-            font-size: 22px;
-            color: #2c3e50;
-        }
-        .choice-buttons button {
+        #kiss-button {
             padding: 12px 20px;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
             color: white;
+            background-color: #e74c3c;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            margin: 10px;
-            width: 150px;
-        }
-        #truth-button { background-color: #3498db; }
-        #dare-button { background-color: #e74c3c; }
-        
-        #gemini-result {
-            margin-top: 20px;
-            font-size: 18px;
-            min-height: 50px;
-            line-height: 1.5;
-        }
-        #close-result-button {
-            margin-top: 20px;
-            padding: 10px 25px;
-            background-color: #95a5a6;
+            margin-top: 10px;
+            width: 100%;
         }
 
-        /* --- Diğer Stiller --- */
         .hidden {
             opacity: 0;
             pointer-events: none;
-        }
-        .spinner {
-            border: 6px solid #f3f3f3;
-            border-top: 6px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen" class="screen">
-        <div id="progress-bar-container">
-            <div id="progress-bar"></div>
-        </div>
-    </div>
-
+    <div id="loading-screen" class="screen"></div>
     <div id="title-screen" class="screen hidden"></div>
 
     <div id="game-screen" class="screen hidden">
         <img id="bottle" src="bottle.png" alt="Bottle">
     </div>
 
-    <!-- YENİ: Gemini için Doğruluk/Cesaret Modalı -->
-    <div id="choice-modal" class="modal-overlay hidden">
+    <!-- Sadəcə "Öp" düyməsi olan pəncərə -->
+    <div id="action-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3>Doğruluk mu, Cesaret mi?</h3>
-            <div class="choice-buttons">
-                <button id="truth-button">✨ Doğruluk</button>
-                <button id="dare-button">✨ Cesaret</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- YENİ: Gemini Sonuç Modalı -->
-    <div id="result-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3 id="result-title">İşte Görevin!</h3>
-            <div id="gemini-result">
-                <div class="spinner"></div> <!-- Yüklenme animasyonu -->
-            </div>
-            <button id="close-result-button" class="choice-buttons hidden">Kapat</button>
+            <h3>Şüşə dayandı!</h3>
+            <button id="kiss-button">❤️ Öp</button>
         </div>
     </div>
 
     <script>
         // --- Element Referansları ---
         const loadingScreen = document.getElementById('loading-screen');
-        const progressBar = document.getElementById('progress-bar');
         const titleScreen = document.getElementById('title-screen');
         const gameScreen = document.getElementById('game-screen');
         const bottle = document.getElementById('bottle');
-        const choiceModal = document.getElementById('choice-modal');
-        const resultModal = document.getElementById('result-modal');
-        const truthButton = document.getElementById('truth-button');
-        const dareButton = document.getElementById('dare-button');
-        const geminiResultDiv = document.getElementById('gemini-result');
-        const resultTitle = document.getElementById('result-title');
-        const closeResultButton = document.getElementById('close-result-button');
+        const actionModal = document.getElementById('action-modal');
+        const kissButton = document.getElementById('kiss-button');
 
         let currentRotation = 0;
         let isSpinning = false;
 
-        // --- Başlangıç Fonksiyonları ---
+        // --- Başlanğıc Funksiyaları ---
         window.onload = () => {
-            setTimeout(() => { progressBar.style.width = '100%'; }, 100);
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                titleScreen.classList.remove('hidden');
-            }, 2600);
+            loadingScreen.classList.add('hidden');
+            titleScreen.classList.remove('hidden');
+
             setTimeout(() => {
                 titleScreen.classList.add('hidden');
                 gameScreen.classList.remove('hidden');
-            }, 4600);
+            }, 3000);
         };
 
-        // --- Oyun Mekanikleri ---
+        // --- Oyun Mexanikası ---
         function spin() {
-            if (isSpinning) return; // Eğer zaten dönüyorsa tekrar döndürme
+            if (isSpinning) return;
             isSpinning = true;
             
             currentRotation += Math.floor(Math.random() * 1800) + 1080;
             bottle.style.transform = `rotate(${currentRotation}deg)`;
 
-            // Animasyon bittikten sonra seçim modalını göster
+            // Animasiya bitdikdən sonra "Öp" pəncərəsini göstər
             setTimeout(() => {
-                choiceModal.classList.remove('hidden');
-            }, 3000); // 3 saniye (CSS transition süresi ile aynı)
+                actionModal.classList.remove('hidden');
+            }, 3000);
         }
 
-        bottle.addEventListener('click', spin);
-
-        // --- Gemini API Fonksiyonları ---
-        async function callGeminiAPI(prompt, maxRetries = 3) {
-            const apiKey = ""; // API anahtarınızı buraya ekleyin veya boş bırakın
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        return result.candidates[0].content.parts[0].text;
-                    } else {
-                        throw new Error("API'den beklenen formatta cevap alınamadı.");
-                    }
-                } catch (error) {
-                    console.error(`Attempt ${i + 1} failed:`, error);
-                    if (i === maxRetries - 1) {
-                        return "Bir hata oluştu. Lütfen tekrar deneyin.";
-                    }
-                    // Exponential backoff
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-                }
-            }
-        }
-
-        async function handleChoice(choice) {
-            choiceModal.classList.add('hidden');
-            resultModal.classList.remove('hidden');
-            geminiResultDiv.innerHTML = '<div class="spinner"></div>'; // Yükleniyor...
-            closeResultButton.classList.add('hidden');
-
-            let prompt = "";
-            if (choice === 'truth') {
-                resultTitle.innerText = "İşte Sorun!";
-                prompt = "Bir arkadaş partisi için eğlenceli, beklenmedik ve komik bir 'doğruluk' sorusu üret.";
-            } else {
-                resultTitle.innerText = "İşte Görevin!";
-                prompt = "Bir arkadaş partisi için eğlenceli, yaratıcı ve güvenli bir 'cesaret' görevi üret.";
-            }
-
-            const responseText = await callGeminiAPI(prompt);
-            geminiResultDiv.innerText = responseText;
-            closeResultButton.classList.remove('hidden');
+        function sendKiss() {
+            alert("Öpüş göndərildi! ❤️");
+            resetGame();
         }
 
         function resetGame() {
-            resultModal.classList.add('hidden');
-            isSpinning = false; // Tekrar döndürmeye izin ver
+            actionModal.classList.add('hidden');
+            isSpinning = false; // Təkrar fırlatmağa icazə ver
         }
 
         // --- Event Listeners ---
-        truthButton.addEventListener('click', () => handleChoice('truth'));
-        dareButton.addEventListener('click', () => handleChoice('dare'));
-        closeResultButton.addEventListener('click', resetGame);
+        bottle.addEventListener('click', spin);
+        kissButton.addEventListener('click', sendKiss);
 
     </script>
 </body>
