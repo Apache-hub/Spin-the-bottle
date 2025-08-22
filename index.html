@@ -2,14 +2,20 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Spin the Bottle</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --table-size: 90vmin; /* Masanın ölçüsü ekranın ölçüsünə görə dəyişir */
+            --player-slot-size: 18vmin; /* Oyunçu yerinin ölçüsü */
+        }
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            background-image: url('https://i.imgur.com/L3eD83T.jpg'); /* Taxta fon */
+            background-size: cover;
             user-select: none;
             -webkit-user-select: none;
         }
@@ -19,112 +25,98 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
             position: absolute;
             top: 0;
             left: 0;
             transition: opacity 0.5s ease-in-out;
         }
         
-        #loading-screen, #title-screen {
-            background-image: url('loading_background.png');
-            background-size: cover;
-            background-position: center;
-        }
-        
-        #game-screen {
-            background-image: url('https://i.imgur.com/L3eD83T.jpg'); /* Taxta fon */
-            background-size: cover;
+        /* OYUN MASASI stilləri */
+        #game-table {
+            width: var(--table-size);
+            height: var(--table-size);
+            position: relative;
         }
         #bottle {
-            height: 300px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 38%; /* Masanın ölçüsünə görə nisbi ölçü */
             width: auto;
+            transform: translate(-50%, -50%); /* Tam mərkəzləmək üçün */
             cursor: pointer;
             transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1);
             -webkit-touch-callout: none;
         }
-        
-        /* --- Modal Stilleri --- */
-        .modal-overlay {
+
+        /* OYUNÇU YERLƏRİ stilləri */
+        .player-slot {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            width: var(--player-slot-size);
+            height: var(--player-slot-size);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            transform: translate(-50%, -50%); /* Mərkəzləmək üçün */
         }
-        .modal-content {
-            background-color: #fff;
-            color: #333;
-            padding: 25px;
-            border-radius: 20px;
-            text-align: center;
-            width: 85%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        .player-avatar {
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            object-fit: cover; /* Şəkil çərçivəyə tam otursun */
         }
-        #kiss-button {
-            padding: 12px 20px;
-            font-size: 22px;
-            font-weight: bold;
-            color: white;
-            background-color: #e74c3c;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
+        .player-slot .plus-icon {
+            font-size: 4vmin;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        /* Hər bir oyunçu yerini masanın ətrafında fırladırıq */
+        #slot-1 { top: 0%; left: 50%; }
+        #slot-2 { top: 15%; left: 85%; }
+        #slot-3 { top: 50%; left: 100%; }
+        #slot-4 { top: 85%; left: 85%; }
+        #slot-5 { top: 100%; left: 50%; }
+        #slot-6 { top: 85%; left: 15%; }
+        #slot-7 { top: 50%; left: 0%; }
+        #slot-8 { top: 15%; left: 15%; }
+
+        .hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen" class="screen"></div>
+    <!-- Yüklənmə və başlıq ekranları hələlik gizlədilib -->
+    <div id="loading-screen" class="screen hidden"></div>
     <div id="title-screen" class="screen hidden"></div>
 
-    <div id="game-screen" class="screen hidden">
-        <img id="bottle" src="bottle.png" alt="Bottle">
-    </div>
-
-    <!-- Sadəcə "Öp" düyməsi olan pəncərə -->
-    <div id="action-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Şüşə dayandı!</h3>
-            <button id="kiss-button">❤️ Öp</button>
+    <!-- Əsas Oyun Ekranı -->
+    <div id="game-screen" class="screen">
+        <div id="game-table">
+            <!-- 8 oyunçu üçün boş yerlər -->
+            <div class="player-slot" id="slot-1"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-2"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-3"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-4"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-5"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-6"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-7"><span class="plus-icon">+</span></div>
+            <div class="player-slot" id="slot-8"><span class="plus-icon">+</span></div>
+            
+            <img id="bottle" src="bottle.png" alt="Bottle">
         </div>
     </div>
 
     <script>
         // --- Element Referansları ---
-        const loadingScreen = document.getElementById('loading-screen');
-        const titleScreen = document.getElementById('title-screen');
-        const gameScreen = document.getElementById('game-screen');
         const bottle = document.getElementById('bottle');
-        const actionModal = document.getElementById('action-modal');
-        const kissButton = document.getElementById('kiss-button');
+        // Nümunə üçün bir oyunçunu masaya əlavə edək
+        const firstSlot = document.getElementById('slot-1');
 
         let currentRotation = 0;
         let isSpinning = false;
-
-        // --- Başlanğıc Funksiyaları ---
-        window.onload = () => {
-            loadingScreen.classList.add('hidden');
-            titleScreen.classList.remove('hidden');
-
-            setTimeout(() => {
-                titleScreen.classList.add('hidden');
-                gameScreen.classList.remove('hidden');
-            }, 3000);
-        };
 
         // --- Oyun Mexanikası ---
         function spin() {
@@ -134,25 +126,32 @@
             currentRotation += Math.floor(Math.random() * 1800) + 1080;
             bottle.style.transform = `rotate(${currentRotation}deg)`;
 
-            // Animasiya bitdikdən sonra "Öp" pəncərəsini göstər
             setTimeout(() => {
-                actionModal.classList.remove('hidden');
+                isSpinning = false;
+                // Gələcəkdə burada "Öp" pəncərəsi açılacaq
+                alert("Şüşə dayandı!"); 
             }, 3000);
         }
-
-        function sendKiss() {
-            alert("Öpüş göndərildi! ❤️");
-            resetGame();
+        
+        // Nümunə: Birinci yuvaya bir şəkil yerləşdirək
+        function addPlayerToSlot(slotElement, playerAvatarUrl) {
+            slotElement.innerHTML = ''; // İçindəki "+" işarəsini silir
+            const avatarImg = document.createElement('img');
+            avatarImg.src = playerAvatarUrl;
+            avatarImg.className = 'player-avatar';
+            slotElement.appendChild(avatarImg);
         }
 
-        function resetGame() {
-            actionModal.classList.add('hidden');
-            isSpinning = false; // Təkrar fırlatmağa icazə ver
-        }
+        // Səhifə yüklənəndə test üçün bir oyunçu əlavə edək
+        window.onload = () => {
+             // Telegram istifadəçisinin profil şəklini almaq üçün gələcəkdə kod yazacağıq
+             // Hələlik statik bir şəkil istifadə edirik
+            addPlayerToSlot(firstSlot, 'https://placehold.co/100x100/EFEFEFF/333?text=Siz');
+        };
+
 
         // --- Event Listeners ---
         bottle.addEventListener('click', spin);
-        kissButton.addEventListener('click', sendKiss);
 
     </script>
 </body>
