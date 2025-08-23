@@ -7,102 +7,120 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            display: flex;
+            flex-direction: column; /* DƏYİŞİKLİK: Ekranı yuxarı və aşağı hissələrə bölürük */
+            height: 100vh;
+            color: white;
+            /* DƏYİŞİKLİK: Bütün seçimlərin və menyuların qarşısını alır */
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
         }
-        .screen {
-            width: 100vw;
-            height: 100vh;
+        #game-area {
+            flex-grow: 1; /* Ekranın qalan hissəsini tutur */
+            background-image: url('table.jpg');
+            background-size: cover;
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: opacity 0.5s ease-in-out;
         }
-        
-        /* --- GİRİŞ EKRANLARI --- */
-        #loading-screen, #title-screen {
-            background-image: url('loading_background.png');
-            background-size: cover;
-            background-position: center;
-        }
-        #progress-bar-container {
-            width: 80%;
-            height: 25px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            padding: 3px;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #b3ffab, #12fff7);
-            border-radius: 10px;
-            transition: width 2.5s ease;
-        }
-
-        /* --- OYUN EKRANI --- */
-        #game-screen {
-            background-image: url('table.jpg');
-            background-size: cover;
-        }
-        #game-container {
-            width: 100%;
-            height: 100%;
+        #game-table {
+            width: 95vmin; /* Ekranın eninə görə ölçü */
+            height: 95vmin;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(4, 1fr);
-            padding: 10px;
-            box-sizing: border-box;
+            position: relative;
         }
         #bottle {
             grid-column: 2 / 4;
             grid-row: 2 / 4;
             align-self: center;
             justify-self: center;
-            height: 35%; 
+            /* DƏYİŞİKLİK: Şüşəni xeyli kiçiltdik */
+            height: 30%; 
             cursor: pointer;
             transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .player-slot { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px; }
-        .player-avatar-wrapper { width: 85%; padding-top: 85%; position: relative; border-radius: 15px; border: 2px solid #fff; box-shadow: 0 0 8px rgba(0,0,0,0.6); background-color: rgba(0,0,0,0.3); overflow: hidden; }
-        .player-avatar { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        .player-name { margin-top: 4px; font-size: 11px; font-weight: bold; text-shadow: 1px 1px 2px black; color: white; white-space: nowrap; }
+        .player-slot {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2px;
+        }
+        .player-avatar-wrapper {
+            width: 85%;
+            padding-top: 85%;
+            position: relative;
+            border-radius: 15px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(0,0,0,0.6);
+            background-color: rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .player-avatar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .player-name {
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            white-space: nowrap;
+        }
         .plus-icon { font-size: 24px; color: rgba(255,255,255,0.5); }
         .p1 { grid-row: 1; grid-column: 1; } .p2 { grid-row: 1; grid-column: 2; } .p3 { grid-row: 1; grid-column: 3; } .p4 { grid-row: 1; grid-column: 4; }
         .p5 { grid-row: 2; grid-column: 1; } .p6 { grid-row: 2; grid-column: 4; }
         .p7 { grid-row: 3; grid-column: 1; } .p8 { grid-row: 3; grid-column: 4; }
         .p9 { grid-row: 4; grid-column: 1; } .p10 { grid-row: 4; grid-column: 2; } .p11 { grid-row: 4; grid-column: 3; } .p12 { grid-row: 4; grid-column: 4; }
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
+        
+        /* DƏYİŞİKLİK: Söhbət pəncərəsi üçün yeni dizayn */
+        #chat-container {
+            height: 30vh; /* Ekranın 30%-ni tutur */
+            background-color: #1e272e; /* Tünd fon */
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        #chat-input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+        #chat-input {
+            flex-grow: 1;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            background-color: #485460;
+            color: white;
+        }
+        #send-button {
+            background: none; border: none; color: #8093a5; font-size: 24px; margin-left: 10px;
         }
     </style>
 </head>
 <body>
-
-    <div id="loading-screen" class="screen">
-        <div id="progress-bar-container">
-            <div id="progress-bar"></div>
-        </div>
-    </div>
-
-    <div id="title-screen" class="screen hidden">
-        <!-- Loqo arxa fonda olduğu üçün bura boş qalır -->
-    </div>
-
-    <div id="game-screen" class="screen hidden">
-        <div id="game-container">
+    <div id="game-area">
+        <div id="game-table">
             <div class="player-slot p1" data-slot="1"></div> <div class="player-slot p2" data-slot="2"></div>
             <div class="player-slot p3" data-slot="3"></div> <div class="player-slot p4" data-slot="4"></div>
             <div class="player-slot p5" data-slot="5"></div> <div class="player-slot p6" data-slot="6"></div>
@@ -110,6 +128,15 @@
             <div class="player-slot p9" data-slot="9"></div> <div class="player-slot p10" data-slot="10"></div>
             <div class="player-slot p11" data-slot="11"></div> <div class="player-slot p12" data-slot="12"></div>
             <img id="bottle" src="bottle.png" alt="Bottle">
+        </div>
+    </div>
+    <div id="chat-container">
+        <div id="chat-messages">
+            <!-- Mesajlar bura gələcək -->
+        </div>
+        <div id="chat-input-area">
+            <input id="chat-input" type="text" placeholder="Mesaj yaz...">
+            <button id="send-button"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -128,40 +155,21 @@
         const database = firebase.database();
         const tg = window.Telegram.WebApp;
 
-        // Elementləri seçirik
-        const loadingScreen = document.getElementById('loading-screen');
-        const progressBar = document.getElementById('progress-bar');
-        const titleScreen = document.getElementById('title-screen');
-        const gameScreen = document.getElementById('game-screen');
         const bottle = document.getElementById('bottle');
         const playerSlots = document.querySelectorAll('.player-slot');
 
         let currentRotation = 0;
         let isSpinning = false;
-        const tableId = 'table_72';
-        const tableRef = database.ref(`tables/${tableId}/players`);
+
         const currentUser = {
             id: tg.initDataUnsafe?.user?.id || 'test_user_' + Date.now(),
             firstName: tg.initDataUnsafe?.user?.first_name || 'Qonaq',
             avatar: `https://i.pravatar.cc/100?u=${tg.initDataUnsafe?.user?.id || 'test'}`
         };
 
-        // GİRİŞ ANİMASİYASI
-        window.onload = () => {
-            setTimeout(() => { progressBar.style.width = '100%'; }, 100);
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                titleScreen.classList.remove('hidden');
-            }, 2600);
-            setTimeout(() => {
-                titleScreen.classList.add('hidden');
-                gameScreen.classList.remove('hidden');
-                // YALNIZ GİRİŞ BİTDİKDƏN SONRA OYUNA QOŞULURUQ
-                joinTable();
-            }, 4600);
-        };
+        const tableId = 'table_72';
+        const tableRef = database.ref(`tables/${tableId}/players`);
 
-        // CANLI OYUN MƏNTİQİ
         tableRef.on('value', (snapshot) => {
             const players = snapshot.val() || {};
             updateTableUI(players);
@@ -171,6 +179,7 @@
             playerSlots.forEach(slot => {
                 const slotNumber = slot.dataset.slot;
                 const playerInSlot = Object.values(players).find(p => p.slot == slotNumber);
+
                 if (playerInSlot) {
                     slot.innerHTML = `<div class="player-avatar-wrapper"><img class="player-avatar" src="${playerInSlot.avatar}"></div><span class="player-name">${playerInSlot.firstName}</span>`;
                 } else {
@@ -182,29 +191,42 @@
         function joinTable() {
             const playerRef = database.ref(`tables/${tableId}/players/${currentUser.id}`);
             playerRef.onDisconnect().remove();
+
             playerRef.once('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     tableRef.once('value', (tableSnapshot) => {
                         const players = tableSnapshot.val() || {};
                         const occupiedSlots = Object.values(players).map(p => p.slot);
                         let freeSlot = 0;
-                        for (let i = 1; i <= 12; i++) { if (!occupiedSlots.includes(i)) { freeSlot = i; break; } }
-                        if (freeSlot) { playerRef.set({ ...currentUser, slot: freeSlot }); }
+                        for (let i = 1; i <= 12; i++) {
+                            if (!occupiedSlots.includes(i)) {
+                                freeSlot = i;
+                                break;
+                            }
+                        }
+                        if (freeSlot) {
+                           playerRef.set({ ...currentUser, slot: freeSlot });
+                        }
                     });
                 }
             });
         }
         
+        // DÜZƏLİŞ: Fırlanma funksiyası yenidən əlavə edildi
         function spin() {
             if (isSpinning) return;
             isSpinning = true;
             currentRotation += Math.floor(Math.random() * 1800) + 1080;
             bottle.style.transform = `rotate(${currentRotation}deg)`;
-            setTimeout(() => { isSpinning = false; }, 3000);
+            setTimeout(() => {
+                isSpinning = false;
+            }, 3000);
         }
         
         bottle.addEventListener('click', spin);
         tg.ready();
+        joinTable();
+
     </script>
 </body>
 </html>
