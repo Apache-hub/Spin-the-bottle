@@ -8,9 +8,7 @@
     <!-- Firebase-in JavaScript kitabxanaları -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Dizayn stilləri dəyişməyib */
         body { margin: 0; font-family: sans-serif; overflow: hidden; background-image: url('https://i.imgur.com/L3eD83T.jpg'); background-size: cover; user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; height: 100vh; color: white; }
         #game-container { flex-grow: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); padding: 15px; box-sizing: border-box; position: relative; }
         #bottle { grid-column: 2 / 4; grid-row: 2 / 4; align-self: center; justify-self: center; height: 60%; cursor: pointer; transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1); }
@@ -27,7 +25,7 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- 12 oyunçu yeri boş olaraq yaradılır -->
+        <!-- 12 oyunçu yeri JavaScript tərəfindən doldurulacaq -->
         <div class="player-slot p1" data-slot="1"></div> <div class="player-slot p2" data-slot="2"></div>
         <div class="player-slot p3" data-slot="3"></div> <div class="player-slot p4" data-slot="4"></div>
         <div class="player-slot p5" data-slot="5"></div> <div class="player-slot p6" data-slot="6"></div>
@@ -38,59 +36,59 @@
     </div>
 
     <script>
-        // --- SİZİN ŞƏXSİ FİREBASE AÇARLARINIZ ---
+        // --- Firebase ilə əlaqə və oyun məntiqi ---
+        
+        // 1. DİQQƏT! BURA ÖZ FİREBASE AÇARLARINIZI YAPIŞDIRIN
         const firebaseConfig = {
             apiKey: "AIzaSyDcN0a1hDVEBjncFcomBfv9zlLUgYEvowY",
             authDomain: "spinthebottle-6598e.firebaseapp.com",
             projectId: "spinthebottle-6598e",
-            storageBucket: "spinthebottle-6598e.appspot.com", // Adətən bu format daha uyğun olur
+            storageBucket: "spinthebottle-6598e.appspot.com",
             messagingSenderId: "601570113630",
             appId: "1:601570113630:web:5e851b7fa8888442025ccf",
-            // DİQQƏT: Realtime Database üçün bu sətrin olması vacibdir!
+            // Bu URL-in düzgün olduğundan əmin olun (Realtime Database üçün)
             databaseURL: "https://spinthebottle-6598e-default-rtdb.firebaseio.com"
         };
 
-        // --- QALAN KOD DƏYİŞMƏYİB ---
+        // Firebase-i başladırıq
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const tg = window.Telegram.WebApp;
 
+        // Oyuna daxil olan istifadəçinin məlumatları
         const currentUser = {
             id: tg.initDataUnsafe?.user?.id || 'test_user_' + Math.floor(Math.random() * 1000),
             firstName: tg.initDataUnsafe?.user?.first_name || 'Test User',
             avatar: `https://i.pravatar.cc/100?u=${tg.initDataUnsafe?.user?.id || 'test'}`
         };
 
-        const tableId = 'table_72';
+        const tableId = 'table_72'; // Test üçün bir masa ID-si
         const tableRef = database.ref(`tables/${tableId}/players`);
         const playerSlots = document.querySelectorAll('.player-slot');
 
+        // Masadakı dəyişiklikləri "dinləyirik"
         tableRef.on('value', (snapshot) => {
             const players = snapshot.val() || {};
             updateTableUI(players);
         });
 
+        // UI-ı (görünüşü) yeniləyən funksiya
         function updateTableUI(players) {
             playerSlots.forEach(slot => {
                 const slotNumber = slot.dataset.slot;
                 const playerInSlot = Object.values(players).find(p => p.slot == slotNumber);
 
                 if (playerInSlot) {
-                    slot.innerHTML = `
-                        <div class="player-avatar-wrapper">
-                            <img class="player-avatar" src="${playerInSlot.avatar}">
-                        </div>
-                        <span class="player-name">${playerInSlot.firstName}</span>
-                    `;
+                    slot.innerHTML = `<div class="player-avatar-wrapper"><img class="player-avatar" src="${playerInSlot.avatar}"></div><span class="player-name">${playerInSlot.firstName}</span>`;
                 } else {
                     slot.innerHTML = `<div class="player-avatar-wrapper"><span class="plus-icon">+</span></div>`;
                 }
             });
         }
         
+        // Oyuna daxil olanda özümüzü masaya əlavə edirik
         function joinTable() {
             const playerRef = database.ref(`tables/${tableId}/players/${currentUser.id}`);
-            
             playerRef.onDisconnect().remove(); // İstifadəçi oyundan çıxanda özünü masadan silsin
 
             playerRef.once('value', (snapshot) => {
@@ -105,7 +103,6 @@
                                 break;
                             }
                         }
-                        
                         playerRef.set({ ...currentUser, slot: freeSlot });
                     });
                 }
